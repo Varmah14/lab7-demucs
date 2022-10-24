@@ -1,5 +1,5 @@
 FROM python:3.6-alpine
-LABEL MAINTAINER="dirk grunwald <grunwald@colorado.edu>"
+LABEL MAINTAINER="PUT YOUR EMAIL HERE"
 
 RUN  pip3 install redis
 
