@@ -2,8 +2,8 @@
 
 The steps you need to take:
 
-+ Develop a Python program that listens to the `toWorkers` redis key exchange, receives a message and retrieves the MP3 song to separate
-+ Create a Docker image that can execute the DEMUCS software, run `min.io` clients and has access to a remote Redis database
++ Develop a Python program that listens to the `toWorkers` redis key exchange, receives a message and retrieves the MP3 song to separate.
++ Create a Docker image that can execute the DEMUCS software, run `min.io` clients and has access to a remote Redis database.
 
 ## Creating a worker image
 The worker will use the [Facebook DEMUCS](https://github.com/facebookresearch/demucs/blob/main/demucs/separate.py)
@@ -17,7 +17,7 @@ Installing flair installs many packages, produces a ~3.5GB container image. It t
 To save time, you can [use an existing DEMUCS docker images](https://github.com/xserrat/docker-facebook-demucs) that is the container resulting from [this Dockerfile](https://github.com/xserrat/docker-facebook-demucs/blob/main/Dockerfile).
 
 You can, but are not required to, use this as the base image for the image containing your worker code. Recall that you can extend a Docker image using `FROM`, then adding additional files and over-riding the `CMD` or `RUN` commands. That means you do *not* need to build the basic `flair` Docker container yourself and when you "push" your image to Docker hub, you should have to upload very little data because my base image has already been uploaded.
-## Program to do sentiment analysis
+## Program to do Music Source Separation
 
 You'll need a single Redis list data type to send data to the worker & another for logging. Redis uses numerical database numbers and number 0 is the default database. Each database is a "key-value" store meaning you can specify different keys for the worker queue (`toWorker` is a good key) and logging (`logging`).
 
@@ -25,7 +25,7 @@ You can use whatever method you like to get data from the REST API to the worker
 
 Rather than send the large MP3 files through Redis, I suggest using the Min.io object storage system (or other object store) to store the song contents; see the [nodes in the overall README](../README.md).
 
-If the `toWorker` request indicates that a *webhook callback* should be used, you should issue an HTTP POST request passing in the payload portion of the callback. You [can use the Python requests library](https://docs.python-requests.org/en/latest/user/quickstart/#make-a-request) to make that request. You don't need to do anything if the request fails, but you should be aware the request may fail
+If the `toWorker` request indicates that a *webhook callback* should be used, you should issue an HTTP POST request passing in the payload portion of the callback. You [can use the Python requests library](https://docs.python-requests.org/en/latest/user/quickstart/#make-a-request) to make that request. You don't need to do anything if the request fails, but you should be aware the request may fail.
 
 ## Waveform Separation Analysis
 
