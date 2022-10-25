@@ -79,6 +79,7 @@ In addition, the GKE load balancer checks for the "health" of your service -- th
 ```
 @app.route('/', methods=['GET'])
 def hello():
+    return '<h1> Music Separation Server</h1><p> Use a valid endpoint </p>'
 ```
 
 Once you've created the load-balancer, you can find the IP address using *e.g.*
