@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# You can use this script to launch Redis and RabbitMQ on Kubernetes
+# You can use this script to launch Redis and minio on Kubernetes
 # and forward their connections to your local computer. That means
 # you can then work on your worker-server.py and rest-server.py
 # on your local computer rather than pushing to Kubernetes with each change.
