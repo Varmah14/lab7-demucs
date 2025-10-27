@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: gcr.io/YOUR_PROJECT/msas-worker:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: WORK_QUEUE
+              value: "toWorker"
+            - name: LOG_LIST
+              value: "logging"
+            - name: MINIO_HOST
+              value: "minio-proj.minio-ns.svc.cluster.local:9000"
+            - name: MINIO_SECURE
+              value: "false"
+            - name: BUCKET_IN
+              value: "queue"
+            - name: BUCKET_OUT
+              value: "output"
+            - name: MODEL_NAME
+              value: "htdemucs"
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-credentials
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-credentials
+                  key: MINIO_SECRET_KEY
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "6Gi"
+            limits:
+              cpu: "2000m"
+              memory: "8Gi"

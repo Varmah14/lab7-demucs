@@ -1,0 +1,55 @@
+# minio/minio-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myminio-proj
+  namespace: minio-ns
+  labels: { app: myminio-proj }
+spec:
+  selector: { matchLabels: { app: myminio-proj } }
+  replicas: 1
+  template:
+    metadata: { labels: { app: myminio-proj } }
+    spec:
+      containers:
+        - name: minio
+          image: quay.io/minio/minio:RELEASE.2024-07-15T01-04-19Z
+          args: ["server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000 # S3 API
+            - containerPort: 9001 # Console
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                {
+                  secretKeyRef:
+                    { name: minio-credentials, key: MINIO_ACCESS_KEY },
+                }
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                {
+                  secretKeyRef:
+                    { name: minio-credentials, key: MINIO_SECRET_KEY },
+                }
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {} # OK for lab; use PVC if you want persistence
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myminio-proj
+  namespace: minio-ns
+spec:
+  selector: { app: myminio-proj }
+  ports:
+    - name: s3
+      port: 9000
+      targetPort: 9000
+    - name: console
+      port: 9001
+      targetPort: 9001
+  type: ClusterIP
