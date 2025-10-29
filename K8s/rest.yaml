@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: rest, namespace: msas, labels: { app: rest } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: rest } }
+  template:
+    metadata: { labels: { app: rest } }
+    spec:
+      containers:
+        - name: rest
+          image: us-central1-docker.pkg.dev/DEM_UCS_PROJECT/msas/msas-rest:v1
+          ports: [{ containerPort: 5000 }]
+          env:
+            - { name: REDIS_HOST, value: "redis" }
+            - { name: REDIS_PORT, value: "6379" }
+            - { name: WORK_QUEUE, value: "toWorker" }
+            - { name: LOG_LIST, value: "logging" }
+            - { name: MINIO_HOST, value: "myminio-proj:9000" } # same namespace DNS short name
+            - { name: MINIO_SECURE, value: "false" }
+            - { name: BUCKET_IN, value: "queue" }
+            - { name: BUCKET_OUT, value: "output" }
+            - { name: MODEL_NAME, value: "htdemucs" }
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                {
+                  secretKeyRef:
+                    { name: minio-credentials, key: MINIO_ACCESS_KEY },
+                }
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                {
+                  secretKeyRef:
+                    { name: minio-credentials, key: MINIO_SECRET_KEY },
+                }
+          readinessProbe:
+            httpGet: { path: "/", port: 5000 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: "/", port: 5000 }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata: { name: rest-service, namespace: msas }
+spec:
+  selector: { app: rest }
+  ports:
+    - { name: http, port: 5000, targetPort: 5000 }
+  type: ClusterIP
