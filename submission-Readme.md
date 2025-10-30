@@ -43,6 +43,7 @@ gcloud container clusters create msas-cluster \
 
 Authenticate
 
+```
 gcloud container clusters get-credentials msas-cluster --zone=us-central1-a
 
 Create Namespace and Secrets
@@ -51,9 +52,11 @@ kubectl create namespace msas
 kubectl -n msas create secret generic minio-credentials \
  --from-literal=MINIO_ACCESS_KEY=minio \
  --from-literal=MINIO_SECRET_KEY=minio123
+```
 
 🐳 Build and Push Docker Images
 
+```
 PROJECT=demucs-lab
 docker build -t us-central1-docker.pkg.dev/$PROJECT/msas/msas-rest:v1 ./rest
 docker build -t us-central1-docker.pkg.dev/$PROJECT/msas/msas-worker:v1 ./worker
@@ -61,23 +64,46 @@ docker build -t us-central1-docker.pkg.dev/$PROJECT/msas/msas-worker:v1 ./worker
 gcloud auth configure-docker us-central1-docker.pkg.dev
 docker push us-central1-docker.pkg.dev/$PROJECT/msas/msas-rest:v1
 docker push us-central1-docker.pkg.dev/$PROJECT/msas/msas-worker:v1
+```
 
 🚀 Deploy on Kubernetes
+
+```
 kubectl -n msas apply -f redis/redis-deployment.yaml
 kubectl -n msas apply -f minio/minio-deployment.yaml
 kubectl -n msas apply -f rest/rest-deployment.yaml
 kubectl -n msas apply -f worker/worker-deployment.yaml
+```
 
 Verify:
 
+```
 kubectl -n msas get pods,svc
+```
+
 ![running Pods](output-images/pods.png)
 
 🔌 Port Forward Services (for Testing)
+
+```
 kubectl -n msas port-forward svc/rest-service 5000:5000 &
 kubectl -n msas port-forward svc/myminio-proj 9001:9000 &
+```
 
 🧪 Run Client Tests
 
 Short Sample (Quick Validation)
+
+```
 python short-sample-request.py
+```
+
+Worker logs
+![Worker logs](output-images/worker-logs.png)
+
+Output- Generated
+![output folder](output-images/output.png)
+![music seperation for input](output-images/music-seperation.png)
+
+This lab demonstrated the power of Kubernetes microservices for scalable machine-learning workflows.
+By decoupling the frontend (REST), backend (Worker), and storage (MinIO), we achieved fault tolerance and scalability similar to production cloud systems.
