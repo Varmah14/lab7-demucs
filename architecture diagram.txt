@@ -1,0 +1,42 @@
+                    ┌────────────────────────────┐
+                    │        User Client         │
+                    │ (curl / Postman / script)  │
+                    └──────────────┬─────────────┘
+                                   │  REST API Request (Upload MP3)
+                                   ▼
+                     ┌───────────────────────────┐
+                     │         REST API          │
+                     │  (rest pod / deployment)  │
+                     └───────┬─────────┬─────────┘
+                             │         │
+                  Save MP3 to│         │Push job to Redis
+                             │         ▼
+                      ┌──────▼──────┐  ┌───────────────────┐
+                      │   MinIO     │  │      Redis        │
+                      │(Object Store│  │(Queue: LPUSH/BLOP)│
+                      │  bucket)    │  └───────────────────┘
+                      └──────┬──────┘           │
+                             │     Worker pops job (BLPOP)
+                             │                 ▼
+                      ┌──────▼──────────────────────────┐
+                      │             Worker              │
+                      │ (Worker pod / DEMUCS analyzer)  │
+                      │  - Downloads MP3 from MinIO     │
+                      │  - Separates tracks (vocals,    │
+                      │    bass, drums, etc.)           │
+                      │  - Uploads results to MinIO     │
+                      └──────┬──────────────────────────┘
+                             │  
+                             │ REST can query results
+                             ▼
+                     ┌──────────────────────────────┐
+                     │         REST API              │
+                     │  (returns download URLs)      │
+                     └──────────────┬───────────────┘
+                                    │
+                         Track URLs returned to User
+                                    ▼
+                     ┌──────────────────────────────┐
+                     │          User Client          │
+                     │ (Downloads separated tracks)   │
+                     └──────────────────────────────┘
